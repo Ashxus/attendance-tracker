@@ -1,10 +1,10 @@
-# //////  Attendance Tracker //////
+# ////// Attendance Tracker //////
 
-A simple, single-page attendance system built to manage work days easily. Staff tap their own name to check in and check out, no typing, no paperwork and the shop owner gets a private admin panel with full history and CSV exports.
+A simple, single-page attendance system built to manage workdays easily. Staff tap their own name to check in and check out, no typing, no paperwork and the shop owner get a private admin panel with full history and CSV exports.
 
 It's one plain HTML file with no build step, no server to maintain, and it's free to host and run.
 
-# What it does..
+## What it does...
 
 Members page - a board of registered staff. Tap "Check In" when you arrive, "Check Out" when you leave. Each button can only be used once per day and grays out automatically. The board resets itself every midnight.
 
@@ -14,7 +14,7 @@ Login screen - the whole site can be locked behind individual username/password 
 
 Live sync - when connected to Supabase (see setup below), every check-in/out is stored in a real shared database, so it doesn't matter whether someone uses their phone, a shop tablet, or your laptop everyone sees the same data.
 
-# Tech stack
+## Tech stack
 
 - Plain HTML, CSS, and JavaScript, no frameworks, no build tools
 - [Supabase](https://supabase.com) (free tier) as the shared database
@@ -23,21 +23,21 @@ Live sync - when connected to Supabase (see setup below), every check-in/out is 
 
 ## Using the app
 
-- First-time setup (as the shop owner)
+ First-time setup (as the shop owner)
 
 1. Open the site. Click the **Admin** tab, you'll be asked to set an admin PIN the first time. Remember this; it's separate from staff logins.
 2. Under **Register members**, add each staff member's name. These are the names that appear on the check-in board, no separate login needed just to check in.
 3. *(Optional but recommended)* Under **Authorized users**, add a username and password for anyone who should be allowed to open the site at all. As soon as one user is added, everyone (including you) will need to log in on any new device.
 
-# Basic Opearation
+## Basic Operation
 
 - Staff open the site, find their name, and tap Check In / Check Out.
 - You can view or export attendance history any time from the Admin page.
 
-# Note
+## Note
 
 This web application is intended for businesses with a manageable workforce.
 
-# License
+## License
 
 MIT
