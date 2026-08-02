@@ -12,6 +12,10 @@ Admin page (PIN-protected) - register or remove staff, browse attendance history
 
 Login screen - the whole site can be locked behind individual username/password accounts, so only people you've explicitly added can access it.
 
+Salary & hours - pick any date range and see total hours and days worked per person, and who worked the most/least. Exportable as CSV. Also lets you set a payment day for each member individually (everyone can be on a different date), a reminder banner appears in Admin with a notification dot on the Admin tab, as each person's day approaches, on the day, and if it's overdue, until you mark it paid.
+
+Monthly attendance summary - pick any month and see exactly how many days each member was present vs. absent (with a % present figure), exportable as CSV. Great for spotting who's missing shifts.
+
 Live sync - when connected to Supabase (see setup below), every check-in/out is stored in a real shared database, so it doesn't matter whether someone uses their phone, a shop tablet, or your laptop everyone sees the same data.
 
 ## Tech stack
