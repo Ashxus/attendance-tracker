@@ -63,6 +63,34 @@
   }
   .tab-btn.active{ background: var(--brass); border-color: var(--brass); color: var(--ink); font-weight: 600; }
   .tab-btn:hover{ border-color: var(--brass); }
+  .tab-btn{ position: relative; }
+  #adminNotifyDot{
+    display:none; position:absolute; top: -3px; right: -3px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #e0574a; border: 2px solid var(--ink);
+  }
+
+  .payment-banner{
+    padding: 14px 18px; border-radius: 8px; font-size: 14px;
+    display:flex; align-items:center; justify-content:space-between; gap: 12px; flex-wrap: wrap;
+  }
+  .payment-banner.due-soon{ background: #f2e2c8; border: 1px solid var(--brass); color: var(--brass-dark); }
+  .payment-banner.due-today{ background: #f6d9d3; border: 1px solid var(--out-rust); color: var(--out-rust-dark); }
+  .payment-banner.overdue{ background: #f6d9d3; border: 1px solid var(--out-rust); color: var(--out-rust-dark); }
+  .payment-banner button{
+    background: var(--ink); color: var(--paper); border: none; padding: 8px 14px;
+    border-radius: 16px; font-size: 12px; font-weight: 600; cursor: pointer; flex-shrink:0;
+  }
+  .salary-rate-input{
+    width: 70px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 4px;
+    background: var(--paper); font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink);
+  }
+  .salary-tag{
+    display:inline-block; font-size: 10px; padding: 2px 7px; border-radius: 10px;
+    font-family: 'IBM Plex Mono', monospace; font-weight: 600; margin-left: 6px;
+  }
+  .salary-tag.most{ background: #e0ead9; color: var(--in-green-dark); }
+  .salary-tag.least{ background: #f6d9d3; color: var(--out-rust-dark); }
 
   header.hero{
     display:flex; justify-content:space-between; align-items:flex-end;
@@ -372,7 +400,7 @@
     </div>
     <div class="nav-tabs">
       <button class="tab-btn active" id="tabMembersBtn" data-tab="members">Members</button>
-      <button class="tab-btn" id="tabAdminBtn" data-tab="admin">Admin</button>
+      <button class="tab-btn" id="tabAdminBtn" data-tab="admin">Admin<span id="adminNotifyDot" style="display:none;"></span></button>
     </div>
   </nav>
 
@@ -441,7 +469,46 @@
     </section>
 
     <section>
-      <h2 class="section-title"><span class="n">2</span>Attendance history</h2>
+      <h2 class="section-title"><span class="n">3</span>Salary &amp; hours</h2>
+
+      <div id="paymentBanner" style="display:none; margin-bottom: 16px;"></div>
+
+      <div class="footnote" style="text-align:left; margin-top:0; margin-bottom:10px;">
+        Set each person's own payment day — every member can be on a different date. A reminder appears here, with a dot on the Admin tab, as each person's day approaches.
+      </div>
+      <div id="payrollSettingsWrap">
+        <div class="empty-state">Loading members…</div>
+      </div>
+
+      <div class="history-controls" style="margin-top: 22px;">
+        <input type="date" id="salaryFromDate" />
+        <span style="opacity:0.6; font-family:'IBM Plex Mono', monospace; font-size:12px;">to</span>
+        <input type="date" id="salaryToDate" />
+        <button class="ghost-btn" id="runSalaryReportBtn">Calculate hours</button>
+        <button class="ghost-btn" id="exportSalaryBtn">Export CSV</button>
+      </div>
+      <div id="salaryReportWrap">
+        <div class="empty-state">Pick a date range and click "Calculate hours" to see who worked more or less.</div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="n">4</span>Monthly attendance summary</h2>
+      <div class="footnote" style="text-align:left; margin-top:0; margin-bottom:10px;">
+        See how many days each member was present vs. absent in a given month.
+      </div>
+      <div class="history-controls">
+        <input type="month" id="attMonthPicker" />
+        <button class="ghost-btn" id="runMonthlySummaryBtn">Show summary</button>
+        <button class="ghost-btn" id="exportMonthlySummaryBtn">Export CSV</button>
+      </div>
+      <div id="monthlySummaryWrap">
+        <div class="empty-state">Pick a month and click "Show summary."</div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="section-title"><span class="n">5</span>Attendance history</h2>
       <div class="history-controls">
         <input type="date" id="historyDate" />
         <button class="ghost-btn" id="exportDayBtn">Export this day (CSV)</button>
@@ -453,7 +520,7 @@
     </section>
 
     <section>
-      <h2 class="section-title"><span class="n">3</span>Authorized users</h2>
+      <h2 class="section-title"><span class="n">6</span>Authorized users</h2>
       <div class="footnote" style="text-align:left; margin-top:0; margin-bottom:12px;">
         Only usernames added here can log into this site at all. Leave the list empty to allow open access (no login screen).
       </div>
@@ -466,7 +533,7 @@
     </section>
 
     <section>
-      <h2 class="section-title"><span class="n">4</span>Security</h2>
+      <h2 class="section-title"><span class="n">7</span>Security</h2>
       <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom: 10px;">
         <button class="ghost-btn" id="changePinBtn">Change admin PIN</button>
         <button class="ghost-btn danger" id="logoutDeviceBtn">Log out this device</button>
@@ -523,6 +590,18 @@
   const addUserBtn = document.getElementById('addUserBtn');
   const adminUsersList = document.getElementById('adminUsersList');
   const logoutDeviceBtn = document.getElementById('logoutDeviceBtn');
+  const paymentBanner = document.getElementById('paymentBanner');
+  const payrollSettingsWrap = document.getElementById('payrollSettingsWrap');
+  const attMonthPicker = document.getElementById('attMonthPicker');
+  const runMonthlySummaryBtn = document.getElementById('runMonthlySummaryBtn');
+  const exportMonthlySummaryBtn = document.getElementById('exportMonthlySummaryBtn');
+  const monthlySummaryWrap = document.getElementById('monthlySummaryWrap');
+  const salaryFromDate = document.getElementById('salaryFromDate');
+  const salaryToDate = document.getElementById('salaryToDate');
+  const runSalaryReportBtn = document.getElementById('runSalaryReportBtn');
+  const exportSalaryBtn = document.getElementById('exportSalaryBtn');
+  const salaryReportWrap = document.getElementById('salaryReportWrap');
+  const adminNotifyDot = document.getElementById('adminNotifyDot');
 
   let members = [];       // [{id, name}]
   let attendance = {};    // { [memberId]: {name, inTime, outTime} }
@@ -562,7 +641,7 @@
   //
   // ---> TO ENABLE REAL CROSS-DEVICE SYNC, FILL THESE TWO IN: <---
   const SUPABASE_URL = 'https://icanofylhegiemqxfnnr.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_cgEIUu1rSfk_KVjbQQCYOA_O49adLh_';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljYW5vZnlsaGVnaWVtcXhmbm5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0OTMzNTMsImV4cCI6MjEwMTA2OTM1M30.m7UcwfMZYZHBB_d-rxhhftyzZJ0mTZDE42VhKVCCQp0';
 
   const CLOUD = (typeof window.storage !== 'undefined' && window.storage);
   const SUPABASE_CONFIGURED =
@@ -752,6 +831,8 @@
       renderAdminMemberList();
       renderAdminUsersList(await fetchUsers());
       await renderHistoryForDate(historyDateInput.value || todayKey);
+      await renderPayrollSettings();
+      await checkPaymentReminder();
     }
   });
   lockAdminBtn.addEventListener('click', () => {
@@ -912,6 +993,8 @@
     await saveMembers();
     renderAdminMemberList();
     renderBoard(); renderSummary();
+    await renderPayrollSettings();
+    await checkPaymentReminder();
   }
 
   addMemberBtn.addEventListener('click', async () => {
@@ -924,6 +1007,7 @@
     await saveMembers();
     renderAdminMemberList();
     renderBoard(); renderSummary();
+    await renderPayrollSettings();
     toast('Registered ' + name);
   });
   newMemberInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') addMemberBtn.click(); });
@@ -933,6 +1017,313 @@
     clearTimeout(shopNameSaveTimer);
     shopNameSaveTimer = setTimeout(saveShopName, 600);
   });
+
+  // ---------- salary & hours ----------
+  function timeStrToMinutes(t){
+    if(!t) return null;
+    const m = t.match(/(\d{1,2}):(\d{2})\s*([AP]M)?/i);
+    if(!m) return null;
+    let hh = parseInt(m[1], 10);
+    const mm = parseInt(m[2], 10);
+    const ampm = m[3] ? m[3].toUpperCase() : null;
+    if(ampm){
+      if(ampm === 'PM' && hh !== 12) hh += 12;
+      if(ampm === 'AM' && hh === 12) hh = 0;
+    }
+    return hh * 60 + mm;
+  }
+  function hoursBetween(inTime, outTime){
+    const a = timeStrToMinutes(inTime), b = timeStrToMinutes(outTime);
+    if(a === null || b === null) return null;
+    let diff = b - a;
+    if(diff < 0) diff += 24 * 60; // handles a shift crossing midnight
+    return diff / 60;
+  }
+  function isoDate(d){ return dateKey(d); }
+  function dateRangeArray(fromStr, toStr){
+    const out = [];
+    const [fy,fm,fd] = fromStr.split('-').map(Number);
+    const [ty,tm,td] = toStr.split('-').map(Number);
+    let cur = new Date(fy, fm-1, fd);
+    const end = new Date(ty, tm-1, td);
+    let guard = 0;
+    while(cur <= end && guard < 366){
+      out.push(isoDate(cur));
+      cur.setDate(cur.getDate() + 1);
+      guard++;
+    }
+    return out;
+  }
+
+  let lastSalaryReport = null; // cached for CSV export
+
+  async function runSalaryReport(){
+    const from = salaryFromDate.value, to = salaryToDate.value;
+    if(!from || !to){ toast('Pick both a start and end date.'); return; }
+    salaryReportWrap.innerHTML = '<div class="empty-state">Crunching the numbers…</div>';
+    const dates = dateRangeArray(from, to);
+    const totals = {}; // memberId -> {hours, days}
+
+    for(const d of dates){
+      const dayData = await loadAttendance(d);
+      Object.keys(dayData).forEach(memberId => {
+        const rec = dayData[memberId];
+        const h = hoursBetween(rec.inTime, rec.outTime);
+        if(!totals[memberId]) totals[memberId] = { name: rec.name, hours: 0, days: 0 };
+        totals[memberId].name = rec.name || totals[memberId].name;
+        if(h !== null){ totals[memberId].hours += h; totals[memberId].days += 1; }
+        else if(rec.inTime){ totals[memberId].days += 1; } // checked in, no checkout — still counts as a day present
+      });
+    }
+
+    const rows = Object.entries(totals).map(([id, t]) => ({ id, ...t }));
+    rows.sort((a,b) => b.hours - a.hours);
+    lastSalaryReport = { from, to, rows };
+
+    if(rows.length === 0){
+      salaryReportWrap.innerHTML = '<div class="empty-state">No attendance records in this date range yet.</div>';
+      return;
+    }
+
+    const maxHours = rows[0].hours;
+    const minHours = rows[rows.length - 1].hours;
+
+    let bodyRows = rows.map(r => {
+      let tag = '';
+      if(rows.length > 1 && maxHours !== minHours){
+        if(r.hours === maxHours) tag = '<span class="salary-tag most">MOST</span>';
+        else if(r.hours === minHours) tag = '<span class="salary-tag least">LEAST</span>';
+      }
+      return `<tr>
+        <td>${escapeHtml(r.name || '(removed member)')}${tag}</td>
+        <td class="mono">${r.days}</td>
+        <td class="mono">${r.hours.toFixed(1)}</td>
+      </tr>`;
+    }).join('');
+
+    salaryReportWrap.innerHTML = `
+      <table>
+        <thead><tr><th>Member</th><th>Days</th><th>Hours</th></tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    `;
+  }
+
+  runSalaryReportBtn.addEventListener('click', runSalaryReport);
+
+  exportSalaryBtn.addEventListener('click', async () => {
+    if(!lastSalaryReport){ await runSalaryReport(); }
+    if(!lastSalaryReport || lastSalaryReport.rows.length === 0){ toast('Nothing to export yet.'); return; }
+    let csv = csvRow(['Member','Days worked','Total hours']) + '\n';
+    lastSalaryReport.rows.forEach(r => {
+      csv += csvRow([r.name || '(removed member)', r.days, r.hours.toFixed(2)]) + '\n';
+    });
+    downloadCsv('hours-' + lastSalaryReport.from + '_to_' + lastSalaryReport.to + '.csv', csv);
+    toast('Exported hours report.');
+  });
+
+  // ---------- monthly present/absent summary ----------
+  let lastMonthlySummary = null; // cached for CSV export
+
+  async function runMonthlySummary(){
+    const monthVal = attMonthPicker.value; // "YYYY-MM"
+    if(!monthVal){ toast('Pick a month first.'); return; }
+    monthlySummaryWrap.innerHTML = '<div class="empty-state">Crunching the numbers…</div>';
+
+    const [y, m] = monthVal.split('-').map(Number);
+    const firstOfMonth = new Date(y, m - 1, 1);
+    const lastOfMonth = new Date(y, m, 0); // last calendar day of that month
+    const today = new Date();
+    const todayKeyNow = dateKey(today);
+    const isCurrentOrFutureMonth = (isoDate(firstOfMonth).slice(0,7) >= dateKey(today).slice(0,7));
+    const effectiveLast = isCurrentOrFutureMonth ? (lastOfMonth < today ? lastOfMonth : today) : lastOfMonth;
+
+    if(effectiveLast < firstOfMonth){
+      monthlySummaryWrap.innerHTML = '<div class="empty-state">That month hasn\'t started yet.</div>';
+      return;
+    }
+
+    const dates = dateRangeArray(isoDate(firstOfMonth), isoDate(effectiveLast));
+    const totalDays = dates.length;
+
+    const presentByMember = {}; // memberId -> count
+    for(const d of dates){
+      const dayData = await loadAttendance(d);
+      Object.keys(dayData).forEach(memberId => {
+        const rec = dayData[memberId];
+        if(rec.inTime){
+          presentByMember[memberId] = (presentByMember[memberId] || 0) + 1;
+        }
+      });
+    }
+
+    if(members.length === 0){
+      monthlySummaryWrap.innerHTML = '<div class="empty-state">No members registered yet.</div>';
+      return;
+    }
+
+    const rows = members.map(m => {
+      const present = presentByMember[m.id] || 0;
+      const absent = totalDays - present;
+      const pct = totalDays > 0 ? Math.round((present / totalDays) * 100) : 0;
+      return { id: m.id, name: m.name, present, absent, pct };
+    });
+    rows.sort((a,b) => b.present - a.present);
+    lastMonthlySummary = { monthVal, totalDays, rows };
+
+    const bodyRows = rows.map(r => `
+      <tr>
+        <td>${escapeHtml(r.name)}</td>
+        <td class="mono">${r.present}</td>
+        <td class="mono">${r.absent}</td>
+        <td class="mono">${r.pct}%</td>
+      </tr>
+    `).join('');
+
+    monthlySummaryWrap.innerHTML = `
+      <div class="footnote" style="text-align:left; margin-top:0;">Out of ${totalDays} day${totalDays===1?'':'s'} counted ${isCurrentOrFutureMonth ? '(month in progress, counted through today)' : 'in that month'}.</div>
+      <table>
+        <thead><tr><th>Member</th><th>Present</th><th>Absent</th><th>% Present</th></tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    `;
+  }
+  runMonthlySummaryBtn.addEventListener('click', runMonthlySummary);
+
+  exportMonthlySummaryBtn.addEventListener('click', async () => {
+    if(!lastMonthlySummary){ await runMonthlySummary(); }
+    if(!lastMonthlySummary || lastMonthlySummary.rows.length === 0){ toast('Nothing to export yet.'); return; }
+    let csv = csvRow(['Member','Present days','Absent days','% Present','Total days counted']) + '\n';
+    lastMonthlySummary.rows.forEach(r => {
+      csv += csvRow([r.name, r.present, r.absent, r.pct + '%', lastMonthlySummary.totalDays]) + '\n';
+    });
+    downloadCsv('attendance-summary-' + lastMonthlySummary.monthVal + '.csv', csv);
+    toast('Exported monthly summary.');
+  });
+
+  // ---------- per-member payroll settings (rate + payment day) ----------
+  async function fetchPaymentDays(){
+    const raw = await safeGet('payment-days', true);
+    if(!raw) return {};
+    try{ return JSON.parse(raw); }catch(e){ return {}; }
+  }
+  async function savePaymentDays(map){
+    await safeSet('payment-days', JSON.stringify(map), true);
+  }
+  async function fetchPaymentAcks(){
+    const raw = await safeGet('payment-acked', true);
+    if(!raw) return {};
+    try{ return JSON.parse(raw); }catch(e){ return {}; }
+  }
+  async function savePaymentAcks(map){
+    await safeSet('payment-acked', JSON.stringify(map), true);
+  }
+
+  async function renderPayrollSettings(){
+    if(members.length === 0){
+      payrollSettingsWrap.innerHTML = '<div class="empty-state">Register members first (section 1) to set their payment day.</div>';
+      return;
+    }
+    const payDays = await fetchPaymentDays();
+    payrollSettingsWrap.innerHTML = `
+      <table>
+        <thead><tr><th>Member</th><th>Payment day (1–31)</th></tr></thead>
+        <tbody>
+          ${members.map(m => `
+            <tr>
+              <td>${escapeHtml(m.name)}</td>
+              <td><input type="number" min="1" max="31" class="salary-rate-input payroll-payday" data-id="${m.id}" value="${payDays[m.id] !== undefined ? payDays[m.id] : ''}" placeholder="e.g. 25" /></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+    payrollSettingsWrap.querySelectorAll('.payroll-payday').forEach(input => {
+      input.addEventListener('change', async () => {
+        const id = input.getAttribute('data-id');
+        const val = input.value.trim();
+        const fresh = await fetchPaymentDays();
+        if(val === ''){ delete fresh[id]; }
+        else{
+          const n = parseInt(val, 10);
+          if(isNaN(n) || n < 1 || n > 31){ toast('Enter a day between 1 and 31.'); input.value = fresh[id] !== undefined ? fresh[id] : ''; return; }
+          fresh[id] = n;
+        }
+        await savePaymentDays(fresh);
+        toast('Payment day saved.');
+        await checkPaymentReminder();
+      });
+    });
+  }
+
+  // ---------- payment day reminder (per member) ----------
+  function ordinalSuffix(n){
+    if(n % 10 === 1 && n !== 11) return 'st';
+    if(n % 10 === 2 && n !== 12) return 'nd';
+    if(n % 10 === 3 && n !== 13) return 'rd';
+    return 'th';
+  }
+
+  async function checkPaymentReminder(){
+    const payDays = await fetchPaymentDays();
+    const memberIds = Object.keys(payDays);
+    if(memberIds.length === 0){
+      paymentBanner.style.display = 'none';
+      adminNotifyDot.style.display = 'none';
+      return;
+    }
+    const acks = await fetchPaymentAcks();
+    const now = new Date();
+    const currentMonthKey = now.getFullYear() + '-' + pad(now.getMonth() + 1);
+    const today = now.getDate();
+
+    const items = [];
+    for(const id of memberIds){
+      if(acks[id] === currentMonthKey) continue;
+      const day = payDays[id];
+      const remindFrom = Math.max(1, day - 3);
+      if(today < remindFrom) continue;
+      const member = members.find(m => m.id === id);
+      const name = member ? member.name : '(removed member)';
+      let cls, msg;
+      if(today < day){
+        cls = 'due-soon';
+        msg = `💰 ${escapeHtml(name)}'s payment day is in ${day - today} day${(day-today)===1?'':'s'} (the ${day}${ordinalSuffix(day)}).`;
+      } else if(today === day){
+        cls = 'due-today';
+        msg = `💰 Today is ${escapeHtml(name)}'s payment day (the ${day}${ordinalSuffix(day)}).`;
+      } else {
+        cls = 'overdue';
+        msg = `⚠️ ${escapeHtml(name)}'s payment day (the ${day}${ordinalSuffix(day)}) was ${today - day} day${(today-day)===1?'':'s'} ago.`;
+      }
+      items.push({ id, cls, msg });
+    }
+
+    if(items.length === 0){
+      paymentBanner.style.display = 'none';
+      adminNotifyDot.style.display = 'none';
+      return;
+    }
+
+    adminNotifyDot.style.display = 'block';
+    paymentBanner.style.display = 'block';
+    paymentBanner.innerHTML = items.map(item => `
+      <div class="payment-banner ${item.cls}" style="margin-bottom:8px;">
+        <span>${item.msg}</span>
+        <button data-ack-id="${item.id}">Mark as paid</button>
+      </div>
+    `).join('');
+    paymentBanner.querySelectorAll('[data-ack-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-ack-id');
+        const fresh = await fetchPaymentAcks();
+        fresh[id] = currentMonthKey;
+        await savePaymentAcks(fresh);
+        toast('Marked as paid.');
+        await checkPaymentReminder();
+      });
+    });
+  }
 
   // ---------- admin: history ----------
   function statusBadge(rec){
@@ -1035,6 +1426,7 @@
         members = await fetchMembers();
         attendance = await loadAttendance(todayKey);
         renderHeader(); renderBoard(); renderSummary();
+        await checkPaymentReminder();
         if(adminUnlocked){ renderAdminMemberList(); await renderHistoryForDate(todayKey); }
         toast('New day started — board reset.');
         return;
@@ -1046,6 +1438,7 @@
       if(adminUnlocked) renderAdminMemberList();
       if(historyKeyBeingViewed === todayKey && adminUnlocked) await renderHistoryForDate(todayKey);
     }, 12000);
+    setInterval(checkPaymentReminder, 60000);
   }
 
   // ---------- authorized users ----------
@@ -1106,6 +1499,14 @@
     historyDateInput.value = todayKey;
     historyDateInput.max = todayKey;
 
+    const now = new Date();
+    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    salaryFromDate.value = isoDate(firstOfMonth);
+    salaryToDate.value = todayKey;
+    const currentMonthVal = now.getFullYear() + '-' + pad(now.getMonth() + 1);
+    attMonthPicker.value = currentMonthVal;
+    attMonthPicker.max = currentMonthVal;
+
     tickClock();
     setInterval(tickClock, 1000);
 
@@ -1114,6 +1515,7 @@
     attendance = await loadAttendance(todayKey);
 
     renderHeader(); renderBoard(); renderSummary();
+    await checkPaymentReminder();
     startBackgroundSync();
   }
 
